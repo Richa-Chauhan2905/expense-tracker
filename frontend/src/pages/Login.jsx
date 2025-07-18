@@ -28,6 +28,7 @@ const Login = () => {
       );
       // console.log(data);
       console.log(response);
+      localStorage.setItem("jwt", response.data.token);
       toast.success("Login successful");
       navigateTo("/");
       setEmail("");
