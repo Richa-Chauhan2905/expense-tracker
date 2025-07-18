@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.post("/add-expense", protectRoute, addExpense);
 router.get("/get-expenses", protectRoute, getExpenses);
-router.post("/update-expense/:id", protectRoute, updateExpense);
+router.put("/update-expense/:id", protectRoute, updateExpense);
 router.delete("/delete-expense/:id", protectRoute, deleteExpense);
 router.get("/filter", protectRoute, filterExpenses);
 
