@@ -2,31 +2,42 @@ import React, { useState } from "react";
 import { useAuthStore } from "../store/useAuthStore";
 import toast from "react-hot-toast";
 import piggyBank from "../assets/piggy_bank.png";
+import { useNavigate } from "react-router-dom";
+import { axiosInstance } from "../lib/axios";
 
 const Signup = () => {
-  const [formData, setFormData] = useState({
-    fullName: "",
-    email: "",
-    password: "",
-  });
+  const [fullName, setFullName] = useState("")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
 
-  const { signup, isSigningUp } = useAuthStore();
+  const navigateTo = useNavigate()
 
-  const validateForm = () => {
-    if (!formData.fullName.trim()) return toast.error("Full Name is required");
-    if (!formData.email.trim()) return toast.error("Email is required");
-    if (!/\S+@\S+\.\S+/.test(formData.email))
-      return toast.error("Invalid email format");
-    if (!formData.password.trim()) return toast.error("Password is required");
-    if (formData.password.length < 6)
-      return toast.error("Password must be at least 6 characters");
-    return true;
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const success = validateForm();
-    if (success === true) signup(formData);
+    try {
+      const {data} = await axiosInstance.post("/user/signup" , {
+        fullName,
+        email,
+        password
+      }, {
+        withCredentials: true,
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }) 
+      console.log(data)
+      toast.success("Signup successful")
+      navigateTo("/")
+      localStorage.setItem("jwt", data.token)
+
+      setFullName("")
+      setEmail("")
+      setPassword("")
+    } catch (error) {
+      console.log("Full error response: ", error.response?.data)
+      console.log(error)
+      toast.error(error.response.data.errors || "User registration failed")
+    }
   };
 
   return (
@@ -57,9 +68,9 @@ const Signup = () => {
           type="text"
           placeholder="Full Name"
           className="rounded px-4 py-3 bg-[#232336] text-white focus:outline-none focus:ring-2 focus:ring-amber-400 placeholder-gray-400 shadow border-none"
-          value={formData.fullName}
+          value={fullName}
           onChange={(e) =>
-            setFormData({ ...formData, fullName: e.target.value })
+            setFullName(e.target.value)
           }
           required
         />
@@ -68,8 +79,8 @@ const Signup = () => {
           type="email"
           placeholder="Email"
           className="rounded px-4 py-3 bg-[#232336] text-white focus:outline-none focus:ring-2 focus:ring-amber-400 placeholder-gray-400 shadow border-none"
-          value={formData.email}
-          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           required
         />
 
@@ -77,19 +88,18 @@ const Signup = () => {
           type="password"
           placeholder="Password"
           className="rounded px-4 py-3 bg-[#232336] text-white focus:outline-none focus:ring-2 focus:ring-amber-400 placeholder-gray-400 shadow border-none"
-          value={formData.password}
+          value={password}
           onChange={(e) =>
-            setFormData({ ...formData, password: e.target.value })
+            setPassword(e.target.value)
           }
           required
         />
 
         <button
           type="submit"
-          disabled={isSigningUp}
           className="bg-amber-400 text-[#18181b] py-3 rounded-lg font-semibold shadow hover:bg-amber-500 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          {isSigningUp ? "Signing up..." : "Sign Up"}
+          Sign Up
         </button>
 
         <p className="text-center text-sm mt-2" style={{ color: "#999999" }}>

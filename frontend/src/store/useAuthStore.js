@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 
 const BASE_URL = "http://localhost:5000";
 
-export const useAuthStore = create(() => ({
+export const useAuthStore = create((set, get) => ({
   authUser: null,
   isSigningUp: false,
   isLoggingIn: false,
@@ -34,4 +34,14 @@ export const useAuthStore = create(() => ({
       set({ isLoggingIn: false });
     }
   },
+
+  logout: async () => {
+    try {
+      await axiosInstance.post("/user/logout");
+      set({ authUser: null });
+      toast.success("Logged out succesfully");
+    } catch (error) {
+      toast.error(error.response.data.message);
+    }
+  }
 }));
