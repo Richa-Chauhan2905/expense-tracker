@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { useAuthStore } from "../store/useAuthStore";
 import toast from "react-hot-toast";
 import piggyBank from "../assets/piggy_bank.png";
 import { useNavigate } from "react-router-dom";

@@ -335,7 +335,7 @@ const Home = () => {
                   onChange={(e) =>
                     setFilters({ ...filters, maxAmount: e.target.value })
                   }
-                  className="w-full bg-slate-700 rounded px-3 py-2"
+                  className="w-full bg-slate-950 rounded px-3 py-2"
                   min="0"
                 />
               </div>
