@@ -537,7 +537,6 @@ const Home = () => {
                           onChange={handleEditChange}
                           className="w-24 bg-slate-700 rounded px-2 py-1"
                           min="0"
-                          step="0.01"
                         />
                       </div>
 
