@@ -82,7 +82,13 @@ export const login = async (req, res) => {
 
 export const logout = async (req, res) => {
   try {
-    res.cookie("jwt", "", { maxAge: 0 });
+    res.clearCookie("jwt", {
+      httpOnly: true,
+      sameSite: "strict",
+      secure: process.env.NODE_ENV !== "development",
+      path: "/",
+    });
+
     res.status(200).json({ message: "Logged out successfully" });
   } catch (error) {
     console.log("Error in logout controller ", error.message);
@@ -113,6 +119,19 @@ export const updateCurrency = async (req, res) => {
       .json({ message: "Currency updated", currency: user.currencyPreference });
   } catch (error) {
     console.log("Error in update currency controller ", error.message);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const getMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select("-password");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json(user);
+  } catch (error) {
+    console.log("Error in getMe controller ", error.message);
     res.status(500).json({ message: "Internal server error" });
   }
 };

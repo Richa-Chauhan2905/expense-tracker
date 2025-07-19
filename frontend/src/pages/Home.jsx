@@ -31,6 +31,7 @@ const Home = () => {
   const [editingId, setEditingId] = useState(null);
   const [editData, setEditData] = useState({});
   const [showFilters, setShowFilters] = useState(false);
+  const [filtersActive, setFiltersActive] = useState(false);
   const [filters, setFilters] = useState({
     category: "",
     paymentMethod: "",
@@ -48,7 +49,7 @@ const Home = () => {
   const fetchExpenses = async () => {
     try {
       setLoading(true);
-      const response = await axiosInstance.get("/expense/get-expenses", {
+      const response = await axiosInstance.get("/expense/filter", {
         params: filters,
         withCredentials: true,
       });
@@ -170,16 +171,54 @@ const Home = () => {
   const handleLogout = async () => {
     try {
       await axiosInstance.post("/user/logout", {}, { withCredentials: true });
-      localStorage.removeItem("jwt");
+      // Dispatch event to notify App.jsx about logout
+      window.dispatchEvent(new Event("authLogout"));
       toast.success("Logged out successfully");
       navigate("/login");
     } catch (error) {
       toast.error("Failed to logout");
     }
   };
+  const fetchFilteredExpenses = async () => {
+    try {
+      setLoading(true);
+      const response = await axiosInstance.get("/expense/filter", {
+        params: {
+          category: filters.category || undefined,
+          paymentMethod: filters.paymentMethod || undefined,
+          minAmount: filters.minAmount || undefined,
+          maxAmount: filters.maxAmount || undefined,
+        },
+        withCredentials: true,
+      });
+
+      if (response.data.expenses.length === 0) {
+        toast("No records found matching your filters", { icon: "🔍" });
+      }
+
+      setExpenses(response.data.expenses);
+      calculateTotal(response.data.expenses);
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Filtering failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const applyFilters = () => {
-    fetchExpenses();
+    const hasFilters =
+      filters.category ||
+      filters.paymentMethod ||
+      filters.minAmount ||
+      filters.maxAmount;
+
+    if (hasFilters) {
+      setFiltersActive(true);
+      fetchFilteredExpenses();
+    } else {
+      setFiltersActive(false);
+      fetchExpenses();
+    }
     setShowFilters(false);
   };
 
@@ -190,6 +229,7 @@ const Home = () => {
       minAmount: "",
       maxAmount: "",
     });
+    setFiltersActive(false);
     fetchExpenses();
     setShowFilters(false);
   };
@@ -384,7 +424,6 @@ const Home = () => {
                 onChange={handleInputChange}
                 className="w-full bg-slate-700 rounded px-3 py-2"
                 min="0"
-                step="0.01"
                 required
               />
             </div>
@@ -614,13 +653,21 @@ const Home = () => {
               ))
             ) : (
               <div className="text-center py-10">
-                <p className="text-slate-400 mb-4">No expenses found</p>
-                <button
-                  onClick={() => setShowForm(true)}
-                  className="border border-amber-500 text-amber-400 px-4 py-2 rounded hover:bg-amber-500 hover:text-slate-950 transition"
-                >
-                  Add Your First Expense
-                </button>
+                {filtersActive ? (
+                  <p className="text-slate-400 mb-4">
+                    No expenses match your filters
+                  </p>
+                ) : (
+                  <>
+                    <p className="text-slate-400 mb-4">No expenses found</p>
+                    <button
+                      onClick={() => setShowForm(true)}
+                      className="border border-amber-500 text-amber-400 px-4 py-2 rounded hover:bg-amber-500 hover:text-slate-950 transition"
+                    >
+                      Add Your First Expense
+                    </button>
+                  </>
+                )}
               </div>
             )}
             {/* Currency Modal */}

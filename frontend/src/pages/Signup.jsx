@@ -25,9 +25,10 @@ const Signup = () => {
         }
       }) 
       console.log(data)
+      // Dispatch custom event to notify App.jsx about successful authentication
+      window.dispatchEvent(new Event("authSuccess"));
       toast.success("Signup successful")
       navigateTo("/")
-      localStorage.setItem("jwt", data.token)
 
       setFullName("")
       setEmail("")

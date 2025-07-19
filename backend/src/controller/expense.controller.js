@@ -76,30 +76,27 @@ export const deleteExpense = async (req, res) => {
 
 export const filterExpenses = async (req, res) => {
   try {
-    const { category, paymentMethod, date } = req.query;
-
+    const { category, paymentMethod, minAmount, maxAmount } = req.query;
     const query = { userId: req.user._id };
 
-    if (category) {
-      query.category = category;
+    if (category) query.category = category;
+    if (paymentMethod) query.paymentMethod = paymentMethod;
+
+    // Add amount filtering
+    if (minAmount || maxAmount) {
+      query.amount = {};
+      if (minAmount) query.amount.$gte = parseFloat(minAmount);
+      if (maxAmount) query.amount.$lte = parseFloat(maxAmount);
     }
 
-    if (paymentMethod) {
-      query.paymentMethod = paymentMethod;
-    }
-
-    if (date) {
-      query.date = date
-    }
-
-    const expenses = await Expense.find(query);
+    const expenses = await Expense.find(query).sort({ date: -1 }); // Newest first
 
     res.status(200).json({
       message: "Filtered expenses fetched successfully",
       expenses,
     });
   } catch (error) {
-    console.log("Error in filterExpenses controller", error.message);
+    console.error("Filter error:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };

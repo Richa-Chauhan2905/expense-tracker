@@ -28,7 +28,8 @@ const Login = () => {
       );
       // console.log(data);
       console.log(response);
-      localStorage.setItem("jwt", response.data.token);
+      // Dispatch custom event to notify App.jsx about successful authentication
+      window.dispatchEvent(new Event("authSuccess"));
       toast.success("Login successful");
       navigateTo("/");
       setEmail("");
